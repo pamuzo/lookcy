@@ -7,12 +7,18 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { colRef, db, auth } from "../../config/firebase";
 import { doc, deleteDoc, collection } from "firebase/firestore";
 import moment from "moment/moment";
 import { MaterialIcons } from "@expo/vector-icons";
 import { FontAwesome } from "@expo/vector-icons";
+import {
+  RewardedAd,
+  RewardedAdEventType,
+  TestIds,
+  AdEventType,
+} from "react-native-google-mobile-ads";
 
 import BackBtn from "../../shared/backBtn";
 import Card from "../../shared/card";
@@ -20,12 +26,58 @@ import Color from "../../styles/colorStyle";
 import JobModal from "./jobModal";
 import { globalStyles } from "../../styles/globalStyle";
 
+const adUnitId = TestIds.REWARDED;
+
+const rewarded = RewardedAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: true,
+  keywords: ["fashion", "clothing"],
+});
+
 export default function JobDetails({ route, navigation }) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [disabled, setDisabled] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const { measuremnt } = route.params;
+
+  // >>>>>>>>>>>>>>>>>>>>>> for Ads >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  useEffect(() => {
+    const unsubscribeLoaded = rewarded.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        setLoaded(true);
+      }
+    );
+    const unsubscribeEarned = rewarded.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      (reward) => {}
+    );
+    const unsubscribeClosed = rewarded.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        setLoaded(false);
+        rewarded.load();
+      }
+    );
+
+    // Start loading the rewarded ad straight away
+    rewarded.load();
+
+    // Unsubscribe from events on unmount
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeEarned();
+      unsubscribeClosed();
+    };
+  }, []);
+
+  // No advert ready to show yet
+  if (!loaded) {
+    return null;
+  }
 
   //to delete the measurements
   const deleteMethod = async () => {
+    setDisabled(true);
     try {
       await deleteDoc(
         doc(
@@ -33,6 +85,8 @@ export default function JobDetails({ route, navigation }) {
           route.params.measuremnt.id
         )
       ).then(() => {
+        rewarded.show();
+        setDisabled(false);
         navigation.navigate("Joblist");
       });
     } catch (err) {
@@ -62,7 +116,7 @@ export default function JobDetails({ route, navigation }) {
 
   const handleUpdate = () => {};
   const handleClose = () => {
-    setModalOpen(false);
+    setDisabled(true);
   };
 
   // const edithMeadurment = () => {
@@ -77,7 +131,7 @@ export default function JobDetails({ route, navigation }) {
       <ScrollView style={{ paddingRight: 20, paddingLeft: 20 }}>
         <Card>
           <Text style={styles.bookDate}>{`Booked Date: ${moment(
-            measuremnt.bookedDate.toDate()
+            measuremnt?.bookedDate?.toDate()
           ).format("ll")}`}</Text>
           <Text
             style={{
@@ -191,7 +245,7 @@ export default function JobDetails({ route, navigation }) {
 
           <View style={globalStyles.hrLine} />
           <Text>{`DeadLine Date: ${moment(
-            measuremnt.deadLineDate.toDate()
+            measuremnt?.deadLineDate?.toDate()
           ).format("ll")}`}</Text>
           <View style={globalStyles.hrLine} />
 
@@ -214,7 +268,13 @@ export default function JobDetails({ route, navigation }) {
             <Text style={styles.txtValue}>{measuremnt.addMessage} </Text>
           </View>
 
-          <View style={globalStyles.twoColum}>
+          <View
+            style={
+              disabled === true
+                ? { display: "none" }
+                : { ...globalStyles.twoColum }
+            }
+          >
             <TouchableOpacity
               style={globalStyles.btnTextIcon}
               onPress={deleteMesurement}
@@ -223,16 +283,16 @@ export default function JobDetails({ route, navigation }) {
               <Text style={{ fontSize: 16, color: Color.white }}>Delete</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={{
                 ...globalStyles.btnTextIcon,
                 backgroundColor: Color.orange,
               }}
-              onPress={"Save Details"}
+              // onPress={"Save Details"}
             >
               <MaterialIcons name="save" color="#fff" size={18} />
               <Text style={{ fontSize: 16, color: Color.white }}>Save</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* <TouchableOpacity
             style={{ ...globalStyles.btnTextIcon, backgroundColor: Color.blue }}

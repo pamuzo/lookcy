@@ -28,15 +28,15 @@ export default function NewsList() {
       setArticles(articleItem);
       setData(articleItem);
       setTile(articleItem.title.slice(0, 40));
-      setDiscription(articleItem.description.slice(0, 120));
+      setDiscription(articleItem.description.slice(0, 200));
+      // console.log(items.slice(0, 3));
     };
-
     getArticles();
   }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
-    setArticles(data);
+    articles;
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
@@ -45,7 +45,7 @@ export default function NewsList() {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={styles.scrollView}
+      contentContainerStyle={{ marginVertical: 17 }}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     paddingLeft: 20,
     paddingBottom: 7,
-    color: Color.black,
+    color: Color.lightBlack,
     fontFamily: "roboto-light",
   },
 });

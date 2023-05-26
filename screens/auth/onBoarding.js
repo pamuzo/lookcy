@@ -15,7 +15,7 @@ export default function Onboarding({ navigation }) {
       <View style={styles.whiteSheet}>
         <Text style={styles.txtTitle}>Best Fashion App</Text>
         <Text style={styles.txtSubTitle}>
-          Keep You Fahion Business in one place{" "}
+          Keep Your Fahion Business in one place
         </Text>
         <Button onPress={() => navigation.navigate("SignIn")}>Log in</Button>
         <Button onPress={() => navigation.navigate("SignUp")} type={"orange"}>

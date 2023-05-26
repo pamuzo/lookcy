@@ -1,18 +1,20 @@
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
-
 import { db, auth } from "../config/firebase";
-import AppScreeen from "./tabStack";
+import Color from "../styles/colorStyle";
+import { StyleSheet } from "react-native";
+import { EMAIL } from "@env";
+
 import JobDetails from "../screens/app/jobDetails";
 import Profile from "../screens/app/profile/profile";
 import DrawerContent from "../shared/drawer";
 import Joblist from "../screens/app/joblist";
 
-import Color from "../styles/colorStyle";
-import HomeBanner from "../screens/app/myBanners/homeBanner";
-import { StyleSheet } from "react-native-web";
+import MyStack from "./Stack";
+import AdminStack from "./adminStack";
+import About from "../screens/admin/about";
+import FeedBack from "../screens/admin/feedBack";
 
 const Drawer = createDrawerNavigator();
 
@@ -23,7 +25,6 @@ export default function DrawerStack() {
     const disName = async () => {
       const displayName = await auth.currentUser?.displayName;
       setDisplayName(displayName);
-      console.log(typeof auth.currentUser?.email);
     };
     disName();
   }, []);
@@ -64,9 +65,9 @@ export default function DrawerStack() {
         },
       })}
       drawerContent={(props) => <DrawerContent {...props} />}
-      defaultScreenOptions={AppScreeen}
+      defaultScreenOptions={MyStack}
     >
-      <Drawer.Screen name="Home" component={AppScreeen} />
+      <Drawer.Screen name="Home" component={MyStack} />
       <Drawer.Screen
         name="JobDetail"
         options={{ drawerItemStyle: { display: "none" } }}
@@ -74,17 +75,21 @@ export default function DrawerStack() {
       />
       <Drawer.Screen name="Account" component={Profile} />
       <Drawer.Screen name="Joblist" component={Joblist} />
-      <Drawer.Screen name="Customer List" component={Profile} />
-      <Drawer.Screen name="About Us" component={Profile} />
-      <Drawer.Screen name="FeedBack" component={Profile} />
       <Drawer.Screen
-        name="HomeBanner"
+        name="Customer List"
+        options={{ drawerItemStyle: { display: "none" } }}
+        component={Profile}
+      />
+      <Drawer.Screen name="About Us" component={About} />
+      <Drawer.Screen name="FeedBack" component={FeedBack} />
+      <Drawer.Screen
+        name="Admin section"
         options={{
           drawerItemStyle: [
-            auth.currentUser?.email !== "md@md.com" ? styles.display : {},
+            auth.currentUser?.email !== EMAIL ? styles.display : {},
           ],
         }}
-        component={HomeBanner}
+        component={AdminStack}
       />
     </Drawer.Navigator>
   );

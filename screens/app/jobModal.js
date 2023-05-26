@@ -4,15 +4,12 @@ import {
   Text,
   Modal,
   ActivityIndicator,
-  Image,
   Alert,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { useState, useEffect } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Formik } from "formik";
-
-import * as yup from "yup";
 import {
   addDoc,
   doc,
@@ -20,9 +17,14 @@ import {
   setDoc,
   collection,
 } from "firebase/firestore";
+import * as yup from "yup";
 import { Timestamp } from "@firebase/firestore";
 import moment from "moment/moment";
-import { colRef, db, auth } from "../../config/firebase";
+import {
+  AdEventType,
+  RewardedAdEventType,
+} from "react-native-google-mobile-ads";
+import { db, auth } from "../../config/firebase";
 import Input from "../../shared/input";
 import Card from "../../shared/card";
 import Button from "../../shared/button";
@@ -44,6 +46,8 @@ export default function JobModal({
   onSubmit,
   mesurement,
   isEdith,
+  interstitial,
+  rewarded,
 }) {
   const [loading, setLoading] = useState(false);
   const [ismale, setIsmale] = useState(true);
@@ -52,6 +56,65 @@ export default function JobModal({
   );
   const [imageUri, setImageUri] = useState(isEdith ? mesurement.image : "");
   const [count, setCount] = useState(isEdith ? Number(mesurement.paires) : 1);
+  const [disabled, setDisabled] = useState(false);
+
+  const [loaded, setLoaded] = useState(false);
+
+  //.................................Ads>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  useEffect(() => {
+    const unsubscribe = interstitial.addAdEventListener(
+      AdEventType.LOADED,
+      () => {
+        setLoaded(true);
+      }
+    );
+    const unsubscribeClosed = interstitial.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        setLoaded(false);
+        interstitial.load();
+      }
+    );
+
+    const unsubscribeLoaded = rewarded.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        setLoaded(true);
+      }
+    );
+    const unsubscribeEarned = rewarded.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      (reward) => {
+        console.log("User earned reward of ", reward);
+      }
+    );
+
+    const rewardedUnsubscribeClosed = rewarded.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        setLoaded(false);
+        rewarded.load();
+      }
+    );
+
+    // Start loading the interstitial straight away
+    interstitial.load();
+    rewarded.load();
+
+    // Unsubscribe from events on unmount
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeEarned();
+      unsubscribe();
+      unsubscribeClosed();
+      rewardedUnsubscribeClosed();
+    };
+  }, []);
+
+  // No advert ready to show yet
+  // if (!loaded) {
+  //   return null;
+  // }
 
   // .......................initial values .............................................
   const newMeasurement = {
@@ -89,6 +152,7 @@ export default function JobModal({
   //.........................to handle the submit button.............................
   const handleSubmit = async (values, actions) => {
     onSubmit(values);
+    setDisabled(true);
     setLoading(true);
 
     // for updating data in firbase
@@ -129,6 +193,7 @@ export default function JobModal({
         })
         .catch((e) => {
           setLoading(false);
+          setDisabled(false);
           console.log(e.mesage);
         });
     } else {
@@ -173,6 +238,7 @@ export default function JobModal({
         })
         .catch((e) => {
           setLoading(false);
+          setDisabled(false);
           console.log(e.mesage);
         });
     }
@@ -208,10 +274,19 @@ export default function JobModal({
 
           <MaterialIcons
             name="close"
-            style={{ ...globalStyles.btnSmall, ...styles.modalTcolse }}
+            style={
+              disabled === true
+                ? {
+                    ...globalStyles.btnSmall,
+                    ...styles.modalTcolse,
+                    opacity: 0.4,
+                  }
+                : { ...globalStyles.btnSmall, ...styles.modalTcolse }
+            }
             size={18}
             color={Color.blue}
             onPress={closeModal}
+            disabled={disabled}
           />
         </View>
 
@@ -243,6 +318,11 @@ export default function JobModal({
                       outLine
                       placeholder="Customer Name"
                     />
+                    {errors.customerName && touched.customerName && (
+                      <Text style={globalStyles.errorTxt}>
+                        {errors.customerName}
+                      </Text>
+                    )}
                     <Input
                       onChangeText={handleChange("phoneNumber")}
                       value={values.phoneNumber}
@@ -264,11 +344,18 @@ export default function JobModal({
                   {/* ........................................PAIRES............................. */}
                   <Card>
                     <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        // flexWrap: "wrap",
-                      }}
+                      style={
+                        disabled === true
+                          ? {
+                              flexDirection: "row",
+                              alignItems: "center",
+                              opacity: 0.4,
+                            }
+                          : {
+                              flexDirection: "row",
+                              alignItems: "center",
+                            }
+                      }
                     >
                       <Text style={styles.lebal}>Paires:</Text>
                       <MaterialIcons
@@ -422,21 +509,33 @@ export default function JobModal({
                   {/* ........................Dealindate........................................... */}
                   <Text style={styles.lebal}>Deadline</Text>
                   <Card>
-                    <DateSelector dateValue={text} onChange={setText} />
+                    <View
+                      style={
+                        disabled === true ? { opacity: 0.4 } : { opacity: 1 }
+                      }
+                    >
+                      <DateSelector dateValue={text} onChange={setText} />
+                    </View>
                   </Card>
 
                   {/* .......................................Image Selector  */}
                   <Card>
-                    <ImageSelector
-                      value={imageUri}
-                      size={24}
-                      color="red"
-                      type={!isEdith ? "blue" : ""}
-                      imageValue={setImageUri}
-                      onChangeText={handleChange("")}
+                    <View
+                      style={
+                        disabled === true ? { opacity: 0.4 } : { opacity: 1 }
+                      }
                     >
-                      Add Picture
-                    </ImageSelector>
+                      <ImageSelector
+                        value={imageUri}
+                        size={24}
+                        color="red"
+                        type={!isEdith ? "blue" : ""}
+                        imageValue={setImageUri}
+                        onChangeText={handleChange("")}
+                      >
+                        Add Picture
+                      </ImageSelector>
+                    </View>
                   </Card>
                   {/* ..............................Additional Messages............................................ */}
                   <Text style={styles.lebal}>Additional Message</Text>

@@ -4,7 +4,6 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 import Color from "../styles/colorStyle";
-import { Children } from "react";
 
 export default function ImageSelector({
   imageValue,
@@ -19,7 +18,6 @@ export default function ImageSelector({
 
   // This function is triggered when the "Select an image" button pressed
   const showImagePicker = async () => {
-    // Ask the user for the permission to access the media library
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -27,15 +25,11 @@ export default function ImageSelector({
       alert("You've refused to allow this appp to access your photos!");
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       //allowsEditing: true,
       quality: 1,
     });
-
-    // Explore the result
-    //console.log(result);
 
     if (!result.canceled) {
       setPickedImagePath(result.assets[0].uri);
@@ -44,8 +38,7 @@ export default function ImageSelector({
         result.assets[0].uri.length
       );
       setImageName(filename.toString());
-      //fileName(imageName);
-      console.log(result.assets[0].uri);
+      // console.log(result.assets[0].uri);
       imageValue(result.assets[0].uri);
       //setFieldValue({ uri: pickedImagePath });
     }
@@ -60,7 +53,6 @@ export default function ImageSelector({
     }
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
-      //allowsEditing: true,
       quality: 0.2,
       aspect: [1, 1.5],
     });
@@ -75,7 +67,11 @@ export default function ImageSelector({
     <View style={styles.screen}>
       {/* <Button onPress={showImagePicker} title="Select an image" /> */}
       <TouchableOpacity
-        style={[styles.buttonContainer, type === "blue" ? styles.blueBG : {}]}
+        style={[
+          styles.buttonContainer,
+          type === "blue" ? styles.blueBG : {},
+          type === "disabled" ? styles.disabled : {},
+        ]}
         onPress={imageSelector ? showImagePicker : openCamera}
       >
         <Feather name="camera" size={size} color={"#fff"} />
@@ -122,5 +118,8 @@ const styles = StyleSheet.create({
   blueBG: {
     backgroundColor: Color.blue,
     borderRadius: 5,
+  },
+  disabled: {
+    opacity: 0.4,
   },
 });

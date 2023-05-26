@@ -23,5 +23,6 @@ const styles = StyleSheet.create({
   cardContent: {
     marginHorizontal: 12,
     marginVertical: 10,
+    overflow: "hidden",
   },
 });

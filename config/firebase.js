@@ -1,20 +1,38 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, doc, onSnapshot } from "firebase/firestore";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { collection, initializeFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
+import {
+  API_KEY,
+  AUTH_DOMAIN,
+  PRODUCT_ID,
+  STORAGE_BUCKET,
+  MESSAGING_SENDER_ID,
+  APP_ID,
+} from "@env";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB4bcOs1lEPxH1lLoQ416GLbZp8ZtLa9UE",
-  authDomain: "testarea-e0eeb.firebaseapp.com",
-  projectId: "testarea-e0eeb",
-  storageBucket: "testarea-e0eeb.appspot.com",
-  messagingSenderId: "806269448099",
-  appId: "1:806269448099:web:6916caa9f74b935df37416",
+  apiKey: API_KEY,
+  authDomain: AUTH_DOMAIN,
+  projectId: PRODUCT_ID,
+  storageBucket: STORAGE_BUCKET,
+  messagingSenderId: MESSAGING_SENDER_ID,
+  appId: APP_ID,
 };
 
 // Initialize Firebase
-initializeApp(firebaseConfig);
-const db = getFirestore();
+let app;
+
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApp();
+}
+
+//initializeApp(firebaseConfig);
+const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
 const auth = getAuth();
 const storage = getStorage();
 

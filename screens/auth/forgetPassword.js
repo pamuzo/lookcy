@@ -10,42 +10,36 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { auth } from "../../config/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import Button from "../../shared/button";
 import Input from "../../shared/input";
 import Title from "../../shared/title";
 import Color from "../../styles/colorStyle";
-import { set } from "react-native-reanimated";
 
 const bgImage = require("../../assets/auth.png");
 
-export default function SignIn({ navigation }) {
+export default function ForgotPassWord({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setpassword] = useState("");
   const [disabled, setDisabled] = useState(false);
 
-  const logIn = () => {
+  const ForgotPassWord = () => {
     setDisabled(true);
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredentials) => {
-        const user = userCredentials.user;
-        // console.log("User signed in!");
+    const auth = getAuth();
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        Alert.alert("Password reset email sent!");
+        navigation.navigate("SignIn");
       })
       .catch((error) => {
-        if (error.code === "auth/email-already-in-use") {
-          Alert.alert("That email address is already in use!");
-          setDisabled(false);
-        } else if (error.code === "auth/invalid-email") {
-          setDisabled(false);
+        setDisabled(false);
+        if (error.code === "auth/invalid-email") {
           Alert.alert("That email address is invalid!");
-        } else {
-          setDisabled(false);
-          Alert.alert("Invalid log in credentials");
         }
         console.error(error);
       });
   };
+
   return (
     <View style={styles.container}>
       <StatusBar hidden={true} />
@@ -53,43 +47,43 @@ export default function SignIn({ navigation }) {
 
       <ScrollView>
         <View style={{ padding: 24, marginTop: 100 }}>
-          <Title>Login....</Title>
-          <Text style={styles.txtSubTitle}>Please Sign in to countinue.</Text>
+          <Title>Forgot Password</Title>
+          <Text style={styles.txtSubTitle}>
+            Please enter Your email to reset your password.
+          </Text>
           <Input
             placeholder="Email"
             keyboardType="email-address"
             onChangeText={(text) => setEmail(text)}
           />
 
-          <Input
-            placeholder="Password"
-            secureTextEntry
-            onChangeText={(text) => setpassword(text)}
-          />
-          <Text
-            onPress={() => navigation.navigate("ForgotPassWord")}
-            style={{ ...styles.footerLink, fontWeight: "normal", fontSize: 14 }}
-          >
-            Forgot Password!
-          </Text>
-
           <Button
-            onPress={logIn}
+            onPress={ForgotPassWord}
             type={disabled === true ? "disabled" : ""}
             disabled={disabled}
           >
-            Log in
+            Send Email
           </Button>
-
-          <View style={styles.footerView}>
-            <Text style={styles.footerText}>
-              Don't have an account?{" "}
-              <Text
-                onPress={() => navigation.navigate("SignUp")}
-                style={styles.footerLink}
-              >
-                Sign up
-              </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 4,
+              marginTop: 30,
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              onPress={() => navigation.navigate("SignIn")}
+              style={styles.footerLink}
+            >
+              Log in
+            </Text>
+            <Text style={styles.footerLink}>/</Text>
+            <Text
+              onPress={() => navigation.navigate("SignUp")}
+              style={styles.footerLink}
+            >
+              Sign up
             </Text>
           </View>
         </View>

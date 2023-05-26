@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, Timestamp } from "firebase/firestore";
 
 import { auth } from "../../config/firebase";
 import { colRef, db } from "../../config/firebase";
@@ -63,14 +63,19 @@ export default function SignUp({ navigation }) {
         updateProfile(auth.currentUser, {
           displayName: firstName,
         });
-        return setDoc(doc(db, "user", userCredentials.user.uid), {
-          fullName: `${firstName} ${lastName}`,
-          email,
-          createdAt: new Date(),
-          bio: "I Love to Sew",
-          brandName: "Look",
-          phoneNumber: "",
-        });
+        return setDoc(
+          doc(db, "user", userCredentials.user.uid),
+          {
+            fullName: `${firstName} ${lastName}`,
+            displayName: firstName,
+            email: email,
+            date: Timestamp.fromDate(new Date()),
+            bio: "I Love to Sew",
+            brandName: "Look",
+            // phoneNumber: ""
+          }
+          //console.log(email)
+        );
       })
       .catch((error) => {
         if (error.code === "auth/email-already-in-use") {
@@ -163,6 +168,7 @@ export default function SignUp({ navigation }) {
               </Text>
             </Text>
           </View>
+          <View style={{ marginBottom: 40 }} />
         </View>
       </ScrollView>
     </View>

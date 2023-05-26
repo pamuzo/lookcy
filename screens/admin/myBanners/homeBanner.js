@@ -1,5 +1,12 @@
 import React from "react";
-import { View, TouchableOpacity, Text, Modal, StyleSheet } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  Text,
+  Modal,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import { useState, useEffect } from "react";
 import { addDoc, collection } from "firebase/firestore";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -15,6 +22,7 @@ import BackBtn from "../../../shared/backBtn";
 import Button from "../../../shared/button";
 import { globalStyles } from "../../../styles/globalStyle";
 import Color from "../../../styles/colorStyle";
+import BannerList from "./bannerList";
 
 export default function HomeBanner() {
   const [title, setTitle] = useState("");
@@ -58,7 +66,7 @@ export default function HomeBanner() {
         () => {
           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
             setImage(downloadURL);
-            console.log("File available at", downloadURL);
+            //console.log("File available at", downloadURL);
           });
         }
       );
@@ -84,20 +92,27 @@ export default function HomeBanner() {
   };
 
   return (
-    <View style={globalStyles.container}>
-      <BackBtn />
+    <View style={styles.container}>
+      <BackBtn title={" Banner"} />
       {/*........................... to open banner modal .................................................... */}
+
       <TouchableOpacity
-        style={{ ...globalStyles.btnTextIcon, backgroundColor: Color.blue }}
+        style={{
+          ...globalStyles.btnTextIcon,
+          backgroundColor: Color.blue,
+          margin: 10,
+          width: "50%",
+        }}
         onPress={() => setModalOpen(true)}
       >
         <MaterialIcons name="save" color="#fff" size={18} />
         <Text style={{ fontSize: 16, color: Color.white }}>add Banner</Text>
       </TouchableOpacity>
 
+      <BannerList />
       {/*........................... to add banner.................................................... */}
       <Modal visible={modalOpen} animationType={"fade"}>
-        <View>
+        <ScrollView>
           <MaterialIcons
             name="close"
             style={{ ...globalStyles.btnSmall, ...styles.modalTcolse }}
@@ -116,6 +131,7 @@ export default function HomeBanner() {
             <Input
               placeholder="Body"
               autoCapitalize="none"
+              multiline
               autoFocus={false}
               value={body}
               onChangeText={(text) => setBody(text)}
@@ -139,7 +155,7 @@ export default function HomeBanner() {
               Submit
             </Button>
           </Card>
-        </View>
+        </ScrollView>
       </Modal>
     </View>
   );
@@ -148,7 +164,6 @@ export default function HomeBanner() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    //padding: 24,
   },
   modalToggle: {
     marginBottom: 10,

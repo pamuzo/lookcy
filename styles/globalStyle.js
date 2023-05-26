@@ -47,4 +47,9 @@ export const globalStyles = StyleSheet.create({
     backgroundColor: Color.red,
     marginBottom: 10,
   },
+  errorTxt: {
+    color: "crimson",
+
+    marginBottom: 8,
+  },
 });

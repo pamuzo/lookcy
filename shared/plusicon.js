@@ -2,7 +2,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import Color from "../styles/colorStyle";
 
-export default function PlusIcon({ onPress }) {
+export default function PlusIcon({ onPress, children }) {
   // const navigation = useNavigation()
 
   // const onPress = () =>{
@@ -10,7 +10,7 @@ export default function PlusIcon({ onPress }) {
   //  }
   return (
     <TouchableOpacity onPress={onPress} style={styles.container}>
-      <Text style={styles.plus}>+</Text>
+      <Text style={styles.plus}>{children}</Text>
     </TouchableOpacity>
   );
 }

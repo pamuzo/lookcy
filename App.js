@@ -1,8 +1,11 @@
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import "expo-dev-client";
+import { Provider } from "react-redux";
 
 import AppRoute from "./routes/appRoutes";
+import { store } from "./redux/store";
 
 export default function App() {
   const [fontsLoaded] = useFonts({

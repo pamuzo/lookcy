@@ -16,6 +16,7 @@ export default function AppScreeen() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: false,
+        tabBarHideOnKeyboard: true,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
           if (route.name === "home") {
@@ -34,7 +35,7 @@ export default function AppScreeen() {
       })}
     >
       <Tab.Screen name="home" component={Home} />
-      <Tab.Screen name="groupChat" component={GroupChat} />
+      {/* <Tab.Screen name="groupChat" component={GroupChat} /> */}
       <Tab.Screen name="Joblist" component={Joblist} />
     </Tab.Navigator>
   );

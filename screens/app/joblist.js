@@ -1,24 +1,41 @@
 import {
   StyleSheet,
   FlatList,
+  RefreshControl,
   Text,
   View,
   Image,
   TouchableOpacity,
 } from "react-native";
-import { collection, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
 import { colRef, auth, db } from "../../config/firebase";
-
+import {
+  InterstitialAd,
+  TestIds,
+  RewardedAd,
+} from "react-native-google-mobile-ads";
 import moment from "moment";
 //shered components
 
+import { globalStyles } from "../../styles/globalStyle";
 import JobModal from "./jobModal";
 import BackBtn from "../../shared/backBtn";
 import Card from "../../shared/card";
 import Plusicon from "../../shared/plusicon";
-import { globalStyles } from "../../styles/globalStyle";
 import Color from "../../styles/colorStyle";
+
+// //.................................Ads>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+const interstitial = InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL, {
+  requestNonPersonalizedAdsOnly: true,
+  //keywords: ["fashion", "clothing", "sport", "games"],
+});
+
+const rewarded = RewardedAd.createForAdRequest(TestIds.REWARDED, {
+  requestNonPersonalizedAdsOnly: true,
+  //keywords: ["fashion", "clothing"],
+});
 
 export default function Joblist({ navigation }) {
   const [jobList, setJobList] = useState([]);
@@ -26,6 +43,7 @@ export default function Joblist({ navigation }) {
   const [modalData, setModalData] = useState({});
   const [isEdith, setIsEdith] = useState(false);
   const [jobNum, setJobNum] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   //collecting the data from firebase
   useEffect(() => {
@@ -63,6 +81,14 @@ export default function Joblist({ navigation }) {
     );
   };
 
+  // const onRefresh = (data) => {
+  //   setRefreshing(true);
+  //   setJobList(data);
+  //   setTimeout(() => {
+  //     setRefreshing(false);
+  //   }, 2000);
+  // };
+
   // to handle the update input
   const passDataToModal = (item) => {
     setIsEdith(true);
@@ -73,6 +99,15 @@ export default function Joblist({ navigation }) {
   const measuredDetails = (measuremnt) => {
     navigation.navigate("JobDetail", { measuremnt });
   };
+  const onClose = () => {
+    setOpenModal(false);
+    if (isEdith) {
+      rewarded.show();
+    } else {
+      interstitial.show();
+    }
+  };
+
   return (
     <View style={styles.container}>
       <BackBtn title={"Job List"} />
@@ -84,7 +119,7 @@ export default function Joblist({ navigation }) {
           zIndex: 1,
         }}
       >
-        <Plusicon onPress={newJob} />
+        <Plusicon onPress={newJob}>+</Plusicon>
       </View>
 
       <Text
@@ -101,6 +136,9 @@ export default function Joblist({ navigation }) {
       <View style={{ flex: 1 }}>
         <FlatList
           data={jobList}
+          // refreshControl={
+          //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          // }
           renderItem={({ item }) => (
             <View style={{ paddingLeft: 20, paddingRight: 20 }}>
               <View>
@@ -186,8 +224,10 @@ export default function Joblist({ navigation }) {
           ListFooterComponent={() => (
             <View>
               <JobModal
+                interstitial={interstitial}
+                rewarded={rewarded}
                 visible={openModal}
-                onClose={() => setOpenModal(false)}
+                onClose={onClose}
                 onSubmit={handleSubmit}
                 mesurement={modalData}
                 isEdith={isEdith}

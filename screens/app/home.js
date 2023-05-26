@@ -2,12 +2,13 @@ import { StyleSheet, ScrollView, Text, View, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState, useEffect } from "react";
 import React from "react";
+import "expo-dev-client";
 import { MaterialIcons } from "@expo/vector-icons";
-import { db, auth, user } from "../../config/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
+import { db, auth } from "../../config/firebase";
 import Color from "../../styles/colorStyle";
 import BannerSlider from "../../shared/bannerSlide";
 import NewsList from "../../shared/newsList";
-import { globalStyles } from "../../styles/globalStyle";
 import {
   GAMBannerAd,
   BannerAd,
@@ -18,6 +19,7 @@ import {
   RewardedInterstitialAd,
   RewardedAdEventType,
 } from "react-native-google-mobile-ads";
+import Post from "../admin/post/post";
 
 export default function Home({ navigation }) {
   const [greet, setGreet] = useState();
@@ -30,19 +32,26 @@ export default function Home({ navigation }) {
     setGreet("Evening");
   };
 
+  // const adUnitId = "ca-app-pub-5001839510508266/5899060212";
+  // const adUnitId = "ca-app-pub-5001839510508266/5899060212";
+
   useEffect(() => {
-    const disName = async () => {
-      const displayName = await auth.currentUser?.displayName;
-      setDisplayName(displayName);
-      console.log(auth?.currentUser);
-    };
-    disName();
+    const docRef = doc(db, "user", auth.currentUser.uid);
+    onSnapshot(docRef, (doc) => {
+      setDisplayName(doc.data()?.displayName);
+    });
+
     greetTime();
   }, []);
+
+  const openChat = () => {
+    navigation.navigate("groupChat");
+  };
 
   const openMenu = () => {
     navigation.openDrawer();
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -54,31 +63,49 @@ export default function Home({ navigation }) {
           style={styles.icon}
         />
         <Text style={styles.txtHeader}>Look</Text>
-        <Text>{` ${greet} ${displayName}`}</Text>
+        <Text>{`${greet} ${displayName}`}</Text>
       </View>
+      {/* <View
+        style={{
+          position: "absolute",
+          bottom: 24,
+          right: 24,
+          zIndex: 1,
+        }}
+      >
+        <PlusIcon onPress={openChat}>
+          <Ionicons
+            name="chatbubble-ellipses"
+            size={28}
+            color={Color.white}
+            style={styles.icon}
+          />
+        </PlusIcon>
+      </View> */}
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <BannerSlider />
-        <View
+        {/* <View
           style={{ ...globalStyles.hrLine, marginBottom: 24, marginTop: 0 }}
-        />
+        /> */}
+        {/* <Post /> */}
         <NewsList />
-
+        <NewsList />
+        <BannerAd
+          unitId={TestIds.BANNER}
+          size={BannerAdSize.FULL_BANNER}
+          requestOptions={{
+            requestNonPersonalizedAdsOnly: true,
+          }}
+        />
         <GAMBannerAd
           unitId={TestIds.BANNER}
-          size={BannerAdSize.LARGE_BANNER}
+          sizes={[BannerAdSize.FULL_BANNER]}
           requestOptions={{
             requestNonPersonalizedAdsOnly: true,
           }}
         />
       </ScrollView>
-      {/* <GAMBannerAd
-        unitId={TestIds.BANNER}
-        sizes={[BannerAdSize.FULL_BANNER]}
-        requestOptions={{
-          requestNonPersonalizedAdsOnly: true,
-        }}
-      /> */}
     </SafeAreaView>
   );
 }
